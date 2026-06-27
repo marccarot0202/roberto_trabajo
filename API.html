@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>API - Entrega Julio IU</title>
+  <link rel="stylesheet" href="css/IU.css">
+</head>
+
+<body>
+  <header>
+    <h1>API - Entrega Julio IU</h1>
+    <p>Documentación de clases, métodos, parámetros y retornos del sistema de pruebas.</p>
+  </header>
+
+  <main class="ventana-scroll">
+
+    <section class="api-card">
+      <h2>1. Descripción general</h2>
+
+      <p>
+        Esta aplicación permite ejecutar pruebas automáticas sobre entidades definidas mediante estructuras JavaScript.
+        Cada entidad dispone de una estructura, definiciones de test de atributos, pruebas concretas y pruebas de submit.
+      </p>
+
+      <p>
+        Las entidades incluidas en esta entrega son:
+      </p>
+
+      <ul>
+        <li><strong>project</strong></li>
+        <li><strong>analysis_preparation</strong></li>
+        <li><strong>characteristic</strong></li>
+      </ul>
+
+      <p>
+        El sistema comprueba pruebas de atributos y pruebas de formulario para las acciones:
+      </p>
+
+      <ul>
+        <li><strong>ADD</strong></li>
+        <li><strong>EDIT</strong></li>
+        <li><strong>SEARCH</strong></li>
+      </ul>
+    </section>
+
+    <section class="api-card">
+      <h2>2. Estructura general de una entidad</h2>
+
+      <p>
+        Cada entidad debe tener una variable global con el formato:
+      </p>
+
+      <pre>
+var nombreentidad_estructura = {
+  entity: "nombreentidad",
+  attributes: [
+    {
+      name: "nombre_atributo",
+      type: "varchar",
+      element: "input",
+      required: {
+        ADD: true,
+        EDIT: true,
+        SEARCH: false
+      },
+      validations: {
+        ADD: [
+          { method: "min_size", param: 1, error: "campo_min_size_KO" }
+        ],
+        EDIT: [
+          { method: "min_size", param: 1, error: "campo_min_size_KO" }
+        ],
+        SEARCH: [
+          { method: "format", param: "^[A-Za-z]*$", error: "campo_format_KO" }
+        ]
+      }
+    }
+  ]
+};
+      </pre>
+
+      <table class="tabla-resultados">
+        <tr>
+          <th>Propiedad</th>
+          <th>Descripción</th>
+        </tr>
+        <tr>
+          <td>entity</td>
+          <td>Nombre de la entidad.</td>
+        </tr>
+        <tr>
+          <td>attributes</td>
+          <td>Listado de atributos que forman la entidad.</td>
+        </tr>
+        <tr>
+          <td>name</td>
+          <td>Nombre del atributo.</td>
+        </tr>
+        <tr>
+          <td>type</td>
+          <td>Tipo lógico del atributo: int, varchar, date, enum o file.</td>
+        </tr>
+        <tr>
+          <td>element</td>
+          <td>Elemento HTML asociado: input, textarea, select, file o inputfile.</td>
+        </tr>
+        <tr>
+          <td>required</td>
+          <td>Indica si el campo es obligatorio en ADD, EDIT o SEARCH.</td>
+        </tr>
+        <tr>
+          <td>validations</td>
+          <td>Validaciones que se ejecutan por cada acción.</td>
+        </tr>
+      </table>
+    </section>
+
+    <section class="api-card">
+      <h2>3. Flujo general de ejecución</h2>
+
+      <div class="flow-box">
+        <div>index.html</div>
+        <span>→</span>
+        <div>menu_entidades.js</div>
+        <span>→</span>
+        <div>Gestor</div>
+        <span>→</span>
+        <div>TestForm / TestSubmit</div>
+        <span>→</span>
+        <div>Validations</div>
+        <span>→</span>
+        <div>Ventana de resultados</div>
+      </div>
+
+      <p>
+        El usuario selecciona una entidad en el menú. La clase <strong>Gestor</strong> comprueba que existan los ficheros
+        y variables necesarias. Si la entidad es válida, muestra los botones para ejecutar el test de atributos o el test de formulario.
+      </p>
+    </section>
+
+    <section class="api-card">
+      <h2>4. Clase Gestor</h2>
+
+      <p>
+        Clase encargada de gestionar la selección de entidades y comprobar que existen las estructuras necesarias.
+      </p>
+
+      <table class="tabla-resultados">
+        <tr>
+          <th>Método</th>
+          <th>Parámetros</th>
+          <th>Retorno</th>
+          <th>Descripción</th>
+        </tr>
+
+        <tr>
+          <td>constructor()</td>
+          <td>No recibe parámetros.</td>
+          <td>Objeto Gestor.</td>
+          <td>Inicializa el gestor principal de la aplicación.</td>
+        </tr>
+
+        <tr>
+          <td>cargarEntidad(nombreEntidad)</td>
+          <td>nombreEntidad: string</td>
+          <td>No devuelve valor.</td>
+          <td>Comprueba la entidad seleccionada y muestra los botones de test.</td>
+        </tr>
+
+        <tr>
+          <td>comprobarEntidad(nombreEntidad)</td>
+          <td>nombreEntidad: string</td>
+          <td>true o array de errores.</td>
+          <td>Comprueba que existan las variables globales de estructura, test de atributos y test de submit.</td>
+        </tr>
+
+        <tr>
+          <td>mostrarError(mensaje)</td>
+          <td>mensaje: string</td>
+          <td>No devuelve valor.</td>
+          <td>Muestra un mensaje de error en modal o en pantalla.</td>
+        </tr>
+
+        <tr>
+          <td>crearBotones(nombreEntidad)</td>
+          <td>nombreEntidad: string</td>
+          <td>No devuelve valor.</td>
+          <td>Crea los botones para ejecutar Test de atributos y Test de formulario.</td>
+        </tr>
+      </table>
+    </section>
+
+    <section class="api-card">
+      <h2>5. Clase TestForm</h2>
+
+      <p>
+        Clase encargada de ejecutar las pruebas de atributos de una entidad.
+      </p>
+
+      <div class="flow-box">
+        <div>TestForm</div>
+        <span>→</span>
+        <div>analizar estructura</div>
+        <span>→</span>
+        <div>analizar definiciones</div>
+        <span>→</span>
+        <div>ejecutar pruebas</div>
+        <span>→</span>
+        <div>ventana resumen</div>
+        <span>→</span>
+        <div>ventana detalle</div>
+      </div>
+
+      <table class="tabla-resultados">
+        <tr>
+          <th>Método</th>
+          <th>Parámetros</th>
+          <th>Retorno</th>
+          <th>Descripción</th>
+        </tr>
+
+        <tr>
+          <td>constructor(nombreEntidad)</td>
+          <td>nombreEntidad: string</td>
+          <td>Objeto TestForm.</td>
+          <td>Recibe el nombre de la entidad y carga estructura, definiciones y pruebas.</td>
+        </tr>
+
+        <tr>
+          <td>ejecutar()</td>
+          <td>No recibe parámetros.</td>
+          <td>No devuelve valor.</td>
+          <td>Ejecuta el análisis de estructura, definiciones y pruebas de atributos.</td>
+        </tr>
+
+        <tr>
+          <td>crearInstanciaEntidad()</td>
+          <td>No recibe parámetros.</td>
+          <td>Objeto de entidad o null.</td>
+          <td>Crea una instancia de la clase de entidad para poder ejecutar validaciones personalizadas.</td>
+        </tr>
+
+        <tr>
+          <td>analizarEstructura()</td>
+          <td>No recibe parámetros.</td>
+          <td>Objeto con información de estructura.</td>
+          <td>Comprueba si la estructura de la entidad es correcta.</td>
+        </tr>
+
+        <tr>
+          <td>analizarDefinicionesTest()</td>
+          <td>No recibe parámetros.</td>
+          <td>Objeto resumen.</td>
+          <td>Cuenta definiciones de test, definiciones correctas, incorrectas y número de definiciones por atributo.</td>
+        </tr>
+
+        <tr>
+          <td>definicionTestCorrecta(definicion)</td>
+          <td>definicion: array</td>
+          <td>boolean</td>
+          <td>Comprueba si una definición de test está bien definida a nivel de tipos.</td>
+        </tr>
+
+        <tr>
+          <td>analizarPruebas(resultadosPruebas)</td>
+          <td>resultadosPruebas: array</td>
+          <td>Objeto resumen.</td>
+          <td>Cuenta pruebas, pruebas correctas, incorrectas, pruebas de error y pruebas de éxito.</td>
+        </tr>
+
+        <tr>
+          <td>pruebaCorrectaTipo(prueba)</td>
+          <td>prueba: array</td>
+          <td>boolean</td>
+          <td>Comprueba si una prueba está bien definida a nivel de tipos.</td>
+        </tr>
+
+        <tr>
+          <td>ejecutarPruebas()</td>
+          <td>No recibe parámetros.</td>
+          <td>Array de resultados.</td>
+          <td>Ejecuta todas las pruebas de atributos de la entidad.</td>
+        </tr>
+
+        <tr>
+          <td>ejecutarUnaPrueba(prueba)</td>
+          <td>prueba: array</td>
+          <td>Objeto resultado.</td>
+          <td>Ejecuta una prueba individual y compara resultado esperado con obtenido.</td>
+        </tr>
+
+        <tr>
+          <td>extraerValoresPrueba(campo, valoresOriginales)</td>
+          <td>campo: string, valoresOriginales: object/array</td>
+          <td>Objeto de valores.</td>
+          <td>Transforma los valores de prueba al formato utilizado por el motor.</td>
+        </tr>
+
+        <tr>
+          <td>obtenerAtributo(nombreCampo)</td>
+          <td>nombreCampo: string</td>
+          <td>Objeto atributo o null.</td>
+          <td>Busca un atributo dentro de la estructura de la entidad.</td>
+        </tr>
+
+        <tr>
+          <td>abrirVentanaResumen(...)</td>
+          <td>Objetos de resumen y resultados.</td>
+          <td>No devuelve valor.</td>
+          <td>Abre la ventana principal de resultados del test de atributos.</td>
+        </tr>
+
+        <tr>
+          <td>escapeHTML(valor)</td>
+          <td>valor: cualquier valor</td>
+          <td>string</td>
+          <td>Escapa caracteres HTML para mostrar datos en ventanas externas.</td>
+        </tr>
+      </table>
+    </section>
+
+    <section class="api-card">
+      <h2>6. Clase TestSubmit</h2>
+
+      <p>
+        Clase encargada de ejecutar pruebas de formulario completas para ADD, EDIT y SEARCH.
+      </p>
+
+      <div class="flow-box">
+        <div>TestSubmit</div>
+        <span>→</span>
+        <div>pruebas físicas</div>
+        <span>+</span>
+        <div>pruebas generadas</div>
+        <span>→</span>
+        <div>CheckSubmit</div>
+        <span>→</span>
+        <div>resumen por acción</div>
+        <span>→</span>
+        <div>detalle + JSON</div>
+      </div>
+
+      <table class="tabla-resultados">
+        <tr>
+          <th>Método</th>
+          <th>Parámetros</th>
+          <th>Retorno</th>
+          <th>Descripción</th>
+        </tr>
+
+        <tr>
+          <td>constructor(nombreEntidad)</td>
+          <td>nombreEntidad: string</td>
+          <td>Objeto TestSubmit.</td>
+          <td>Carga estructura, pruebas físicas, pruebas de atributos y validador.</td>
+        </tr>
+
+        <tr>
+          <td>ejecutar()</td>
+          <td>No recibe parámetros.</td>
+          <td>No devuelve valor.</td>
+          <td>Ejecuta pruebas físicas y generadas automáticamente.</td>
+        </tr>
+
+        <tr>
+          <td>crearInstanciaEntidad()</td>
+          <td>No recibe parámetros.</td>
+          <td>Objeto de entidad o null.</td>
+          <td>Crea la instancia de entidad para validaciones personalizadas.</td>
+        </tr>
+
+        <tr>
+          <td>CheckSubmit(accion, valores)</td>
+          <td>accion: string, valores: object</td>
+          <td>true o array de errores.</td>
+          <td>Valida todos los campos de un formulario para ADD, EDIT o SEARCH.</td>
+        </tr>
+
+        <tr>
+          <td>valorEstaVacio(valor)</td>
+          <td>valor: cualquier valor</td>
+          <td>boolean</td>
+          <td>Indica si un valor debe considerarse vacío.</td>
+        </tr>
+
+        <tr>
+          <td>ejecutarUnaPruebaSubmit(prueba, origen)</td>
+          <td>prueba: array, origen: string</td>
+          <td>Objeto resultado.</td>
+          <td>Ejecuta una prueba de submit física o generada.</td>
+        </tr>
+
+        <tr>
+          <td>compararResultadoSubmit(esperado, obtenido)</td>
+          <td>esperado: any, obtenido: any</td>
+          <td>boolean</td>
+          <td>Compara errores esperados con errores obtenidos.</td>
+        </tr>
+
+        <tr>
+          <td>generarResumenPorAccion(resultados)</td>
+          <td>resultados: array</td>
+          <td>Objeto resumen.</td>
+          <td>Agrupa las pruebas de submit por ADD, EDIT y SEARCH.</td>
+        </tr>
+
+        <tr>
+          <td>generarSubmitAutomatico()</td>
+          <td>No recibe parámetros.</td>
+          <td>Array de pruebas generadas.</td>
+          <td>Genera pruebas de submit a partir de las pruebas de atributos.</td>
+        </tr>
+
+        <tr>
+          <td>obtenerValoresCorrectosBase(accion)</td>
+          <td>accion: string</td>
+          <td>Objeto de valores correctos.</td>
+          <td>Devuelve un formulario base correcto para la acción indicada.</td>
+        </tr>
+
+        <tr>
+          <td>valorCorrectoParaAtributo(atributo, accion)</td>
+          <td>atributo: object, accion: string</td>
+          <td>Valor correcto para el atributo.</td>
+          <td>Obtiene un valor válido para cada atributo según su tipo y acción.</td>
+        </tr>
+
+        <tr>
+          <td>extraerValoresPrueba(campo, valoresOriginales)</td>
+          <td>campo: string, valoresOriginales: object/array</td>
+          <td>Objeto de valores.</td>
+          <td>Normaliza los valores de las pruebas de atributos para usarlos en submit.</td>
+        </tr>
+
+        <tr>
+          <td>abrirVentanaResumenSubmit(resumen, resultados, pruebasGeneradas)</td>
+          <td>resumen: object, resultados: array, pruebasGeneradas: array</td>
+          <td>No devuelve valor.</td>
+          <td>Abre la ventana de resumen de submit, detalle y JSON generado.</td>
+        </tr>
+      </table>
+    </section>
+
+    <section class="api-card">
+      <h2>7. Clase ValidateFieldsForm</h2>
+
+      <p>
+        Clase puente entre la estructura de una entidad y la clase <strong>Validations</strong>.
+        Crea campos temporales ocultos para ejecutar las validaciones sin depender de formularios reales.
+      </p>
+
+      <table class="tabla-resultados">
+        <tr>
+          <th>Método</th>
+          <th>Parámetros</th>
+          <th>Retorno</th>
+          <th>Descripción</th>
+        </tr>
+
+        <tr>
+          <td>constructor()</td>
+          <td>No recibe parámetros.</td>
+          <td>Objeto ValidateFieldsForm.</td>
+          <td>Inicializa una instancia de Validations.</td>
+        </tr>
+
+        <tr>
+          <td>limpiarCamposTemporales()</td>
+          <td>No recibe parámetros.</td>
+          <td>No devuelve valor.</td>
+          <td>Elimina los campos temporales creados para pruebas.</td>
+        </tr>
+
+        <tr>
+          <td>prepararCampos(estructura, valores)</td>
+          <td>estructura: object, valores: object</td>
+          <td>No devuelve valor.</td>
+          <td>Crea todos los campos temporales de una entidad.</td>
+        </tr>
+
+        <tr>
+          <td>prepararCampo(campo, elemento, valor)</td>
+          <td>campo: string, elemento: string, valor: any</td>
+          <td>Elemento HTML.</td>
+          <td>Crea un input, textarea, select o fichero temporal.</td>
+        </tr>
+
+        <tr>
+          <td>ejecutarValidacionesAtributo(atributo, accion, instanciaEntidad)</td>
+          <td>atributo: object, accion: string, instanciaEntidad: object</td>
+          <td>true o código de error.</td>
+          <td>Ejecuta las validaciones de un atributo para una acción.</td>
+        </tr>
+
+        <tr>
+          <td>ejecutarValidacion(atributo, validacion, instanciaEntidad)</td>
+          <td>atributo: object, validacion: object, instanciaEntidad: object</td>
+          <td>true o código de error.</td>
+          <td>Ejecuta una validación concreta.</td>
+        </tr>
+
+        <tr>
+          <td>ejecutarValidacionPersonalizada(atributo, instanciaEntidad, error)</td>
+          <td>atributo: object, instanciaEntidad: object, error: string</td>
+          <td>true o código de error.</td>
+          <td>Ejecuta métodos personalizados del tipo nombreCampo_personalized_validation().</td>
+        </tr>
+      </table>
+    </section>
+
+    <section class="api-card">
+      <h2>8. Clase Validations</h2>
+
+      <p>
+        Clase que contiene las validaciones atómicas utilizadas por TestForm y TestSubmit.
+      </p>
+
+      <table class="tabla-resultados">
+        <tr>
+          <th>Método</th>
+          <th>Parámetros</th>
+          <th>Retorno</th>
+          <th>Descripción</th>
+        </tr>
+
+        <tr>
+          <td>constructor()</td>
+          <td>No recibe parámetros.</td>
+          <td>Objeto Validations.</td>
+          <td>Inicializa la clase de validaciones.</td>
+        </tr>
+
+        <tr>
+          <td>getElement(id)</td>
+          <td>id: string</td>
+          <td>Elemento HTML o null.</td>
+          <td>Obtiene un elemento del DOM por su id.</td>
+        </tr>
+
+        <tr>
+          <td>getValue(id)</td>
+          <td>id: string</td>
+          <td>string</td>
+          <td>Obtiene el valor de un input, textarea, select o campo temporal.</td>
+        </tr>
+
+        <tr>
+          <td>getFile(id)</td>
+          <td>id: string</td>
+          <td>File, objeto simulado o null.</td>
+          <td>Obtiene el fichero real o simulado asociado a un input file.</td>
+        </tr>
+
+        <tr>
+          <td>min_size(id, minsize)</td>
+          <td>id: string, minsize: number</td>
+          <td>boolean</td>
+          <td>Comprueba que el valor tenga longitud mínima.</td>
+        </tr>
+
+        <tr>
+          <td>max_size(id, maxsize)</td>
+          <td>id: string, maxsize: number</td>
+          <td>boolean</td>
+          <td>Comprueba que el valor no supere la longitud máxima.</td>
+        </tr>
+
+        <tr>
+          <td>format(id, exprreg)</td>
+          <td>id: string, exprreg: string</td>
+          <td>boolean</td>
+          <td>Comprueba el valor mediante una expresión regular.</td>
+        </tr>
+
+        <tr>
+          <td>value(id, valoresPermitidos)</td>
+          <td>id: string, valoresPermitidos: array</td>
+          <td>boolean</td>
+          <td>Comprueba que el valor esté dentro de un conjunto permitido.</td>
+        </tr>
+
+        <tr>
+          <td>value_or_empty(id, valoresPermitidos)</td>
+          <td>id: string, valoresPermitidos: array</td>
+          <td>boolean</td>
+          <td>Permite valor vacío o un valor incluido en el conjunto permitido.</td>
+        </tr>
+
+        <tr>
+          <td>date_format(id)</td>
+          <td>id: string</td>
+          <td>boolean</td>
+          <td>Comprueba que la fecha tenga formato dd/mm/aaaa y sea real.</td>
+        </tr>
+
+        <tr>
+          <td>date_format_or_empty(id)</td>
+          <td>id: string</td>
+          <td>boolean</td>
+          <td>Permite fecha vacía o fecha válida en formato dd/mm/aaaa.</td>
+        </tr>
+
+        <tr>
+          <td>not_exist_file(id)</td>
+          <td>id: string</td>
+          <td>boolean</td>
+          <td>Comprueba si existe un fichero asociado al campo.</td>
+        </tr>
+
+        <tr>
+          <td>fichero(id)</td>
+          <td>id: string</td>
+          <td>boolean</td>
+          <td>Alias de not_exist_file(id). Comprueba que exista un fichero.</td>
+        </tr>
+
+        <tr>
+          <td>max_size_file(id, maxsize)</td>
+          <td>id: string, maxsize: number</td>
+          <td>boolean</td>
+          <td>Comprueba que el tamaño del fichero no supere el máximo indicado.</td>
+        </tr>
+
+        <tr>
+          <td>type_file(id, array_tipos)</td>
+          <td>id: string, array_tipos: array</td>
+          <td>boolean</td>
+          <td>Comprueba que el tipo MIME del fichero esté permitido.</td>
+        </tr>
+
+        <tr>
+          <td>format_name_file(id, exprreg)</td>
+          <td>id: string, exprreg: string</td>
+          <td>boolean</td>
+          <td>Comprueba el nombre del fichero mediante expresión regular.</td>
+        </tr>
+
+        <tr>
+          <td>max_size_file_optional(id, maxsize)</td>
+          <td>id: string, maxsize: number</td>
+          <td>boolean</td>
+          <td>Si no hay fichero devuelve true; si hay fichero comprueba el tamaño.</td>
+        </tr>
+
+        <tr>
+          <td>type_file_optional(id, array_tipos)</td>
+          <td>id: string, array_tipos: array</td>
+          <td>boolean</td>
+          <td>Si no hay fichero devuelve true; si hay fichero comprueba el tipo.</td>
+        </tr>
+
+        <tr>
+          <td>format_name_file_optional(id, exprreg)</td>
+          <td>id: string, exprreg: string</td>
+          <td>boolean</td>
+          <td>Si no hay fichero devuelve true; si hay fichero comprueba el nombre.</td>
+        </tr>
+
+        <tr>
+          <td>date_greater_than(idFechaFin, idFechaInicio)</td>
+          <td>idFechaFin: string, idFechaInicio: string</td>
+          <td>boolean</td>
+          <td>Comprueba que una fecha final sea posterior a una fecha inicial.</td>
+        </tr>
+      </table>
+    </section>
+
+    <section class="api-card">
+      <h2>9. Validaciones personalizadas</h2>
+
+      <p>
+        Las validaciones personalizadas permiten comprobar reglas que dependen de varios campos.
+      </p>
+
+      <p>
+        En esta entrega se usa una validación personalizada en la entidad <strong>project</strong>:
+      </p>
+
+      <pre>
+end_date_project_personalized_validation()
+      </pre>
+
+      <p>
+        Esta validación comprueba que <strong>end_date_project</strong> sea posterior a
+        <strong>start_date_project</strong>.
+      </p>
+
+      <table class="tabla-resultados">
+        <tr>
+          <th>Método</th>
+          <th>Parámetros</th>
+          <th>Retorno</th>
+          <th>Descripción</th>
+        </tr>
+
+        <tr>
+          <td>end_date_project_personalized_validation()</td>
+          <td>No recibe parámetros directos.</td>
+          <td>true o end_date_project_date_greater_than_KO</td>
+          <td>Comprueba que la fecha final del proyecto sea posterior a la fecha inicial.</td>
+        </tr>
+      </table>
+    </section>
+
+    <section class="api-card">
+      <h2>10. Formato de los tests de atributos</h2>
+
+      <p>
+        Las definiciones de test usan la variable:
+      </p>
+
+      <pre>
+var nombreentidad_def_tests = Array(...)
+      </pre>
+
+      <p>
+        Las pruebas concretas usan la variable:
+      </p>
+
+      <pre>
+var nombreentidad_pruebas = Array(...)
+      </pre>
+
+      <h3>Formato de una definición de test</h3>
+
+      <pre>
+[
+  "entidad",
+  "campo",
+  "elemento",
+  numeroDefinicion,
+  "descripcion",
+  "ADD/EDIT/SEARCH",
+  resultadoEsperado,
+  "mensaje"
+]
+      </pre>
+
+      <h3>Formato de una prueba</h3>
+
+      <pre>
+[
+  "entidad",
+  "campo",
+  numeroDefinicion,
+  numeroPrueba,
+  "ADD/EDIT/SEARCH",
+  { campo: "valor" },
+  resultadoEsperado
+]
+      </pre>
+    </section>
+
+    <section class="api-card">
+      <h2>11. Formato de los tests de submit</h2>
+
+      <p>
+        Las pruebas de submit usan la variable:
+      </p>
+
+      <pre>
+var nombreentidad_TestSubmit = Array(...)
+      </pre>
+
+      <h3>Formato</h3>
+
+      <pre>
+[
+  "entidad",
+  "ADD/EDIT/SEARCH",
+  numeroPrueba,
+  "descripcion",
+  {
+    campo1: "valor",
+    campo2: "valor"
+  },
+  resultadoEsperado
+]
+      </pre>
+
+      <p>
+        El sistema también genera automáticamente pruebas de submit a partir de las pruebas de atributos.
+        Estas pruebas se muestran en una ventana externa en formato JSON copiable.
+      </p>
+    </section>
+
+    <section class="api-card">
+      <h2>12. Resultados esperados del sistema</h2>
+
+      <table class="tabla-resultados">
+        <tr>
+          <th>Entidad</th>
+          <th>Test de atributos</th>
+          <th>Test de formulario</th>
+        </tr>
+
+        <tr>
+          <td>project</td>
+          <td>ADD, EDIT y SEARCH con 0 incorrectas.</td>
+          <td>Resumen por acción con 0 incorrectas.</td>
+        </tr>
+
+        <tr>
+          <td>analysis_preparation</td>
+          <td>ADD, EDIT y SEARCH con 0 incorrectas.</td>
+          <td>Resumen por acción con 0 incorrectas.</td>
+        </tr>
+
+        <tr>
+          <td>characteristic</td>
+          <td>ADD, EDIT y SEARCH con 0 incorrectas.</td>
+          <td>Resumen por acción con 0 incorrectas.</td>
+        </tr>
+      </table>
+    </section>
+
+    <section class="api-card">
+      <h2>13. Volver</h2>
+      <p>
+        <a href="index.html">Volver a la aplicación principal</a>
+      </p>
+    </section>
+
+  </main>
+
+  <footer>
+    <p>Entrega Julio IU - API del sistema de pruebas</p>
+  </footer>
+</body>
+</html>

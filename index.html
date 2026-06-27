@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrega Julio - Interfaces de Usuario</title>
+
+  <link rel="stylesheet" href="css/IU.css">
+
+  <!-- Datos generales de la entrega -->
+  <script src="Julio_Datos_DiegoBonomeGarrido.js"></script>
+
+  <!-- Menú de entidades -->
+  <script src="js/menu_entidades.js"></script>
+
+  <!-- Clases principales -->
+  <script src="js/core/Validations_Class.js"></script>
+  <script src="js/core/ValidateFieldsForm_Class.js"></script>
+  <script src="js/core/TestForm_Class.js"></script>
+  <script src="js/core/TestSubmit_Class.js"></script>
+  <script src="js/core/Gestor_Class.js"></script>
+
+  <!-- Entidad project -->
+  <script src="js/entities/project/project_estructura.js"></script>
+  <script src="js/entities/project/project_tests.js"></script>
+  <script src="js/entities/project/project_TestSubmit.js"></script>
+  <script src="js/entities/project/project_Class.js"></script>
+
+  <!-- Entidad analysis_preparation -->
+  <script src="js/entities/analysis_preparation/analysis_preparation_estructura.js"></script>
+  <script src="js/entities/analysis_preparation/analysis_preparation_tests.js"></script>
+  <script src="js/entities/analysis_preparation/analysis_preparation_TestSubmit.js"></script>
+  <script src="js/entities/analysis_preparation/analysis_preparation_Class.js"></script>
+
+  <!-- Entidad characteristic -->
+  <script src="js/entities/characteristic/characteristic_estructura.js"></script>
+  <script src="js/entities/characteristic/characteristic_tests.js"></script>
+  <script src="js/entities/characteristic/characteristic_TestSubmit.js"></script>
+  <script src="js/entities/characteristic/characteristic_Class.js"></script>
+</head>
+
+<body onload="inicializarPagina()">
+
+  <header>
+    <h1>Entrega Julio - Interfaces de Usuario</h1>
+    <a class="api-link" href="API.html" target="_blank" title="Ver documentación API">API</a>
+  </header>
+
+  <nav>
+    <button id="boton_menu" type="button" onclick="mostrarOcultarMenu()">☰ Entidades</button>
+    <div id="menu_entidades_contenedor" class="menu-entidades"></div>
+  </nav>
+
+  <main id="zona_trabajo">
+    <section class="panel-bienvenida">
+      <h2>Seleccione una entidad</h2>
+      <p>
+        Desde este panel se ejecutan los test de atributos y los test de submit definidos para cada entidad.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <span id="datos_entrega">Cargando datos de entrega...</span>
+  </footer>
+
+  <div id="modal_error" class="modal oculto">
+    <div class="modal-contenido">
+      <h3>Error detectado</h3>
+      <p id="modal_error_texto"></p>
+      <button type="button" onclick="cerrarModal()">Aceptar</button>
+    </div>
+  </div>
+
+  <script>
+    function inicializarPagina() {
+      mostrarDatosEntrega();
+      cargarMenuEntidades();
+    }
+
+    function mostrarDatosEntrega() {
+      const contenedor = document.getElementById('datos_entrega');
+
+      if (!contenedor) {
+        return;
+      }
+
+      if (typeof info_entrega === 'undefined') {
+        contenedor.textContent = 'No se ha localizado la variable info_entrega.';
+        return;
+      }
+
+      /*
+        Se admite tanto este formato:
+        var info_entrega = Array({
+          entrega: "Julio",
+          dni: "12345678Z",
+          alumno: "Diego Bonome Garrido",
+          horas: 70
+        });
+
+        Como este otro:
+        var info_entrega = Array("Julio", "12345678Z", "Diego Bonome Garrido", 70);
+      */
+
+      const datos = Array.isArray(info_entrega) ? info_entrega[0] : info_entrega;
+
+      if (typeof datos === 'object' && datos !== null) {
+        const entrega = datos.entrega || 'Julio';
+        const alumno = datos.alumno || datos.nombre || 'Alumno no indicado';
+        const horas = datos.horas || datos.horas_dedicadas || 'No indicadas';
+
+        contenedor.textContent =
+          'Alumno: ' + alumno +
+          ' | Entrega: ' + entrega +
+          ' | Horas dedicadas: ' + horas;
+
+        return;
+      }
+
+      if (Array.isArray(info_entrega)) {
+        contenedor.textContent = info_entrega.join(' - ');
+        return;
+      }
+
+      contenedor.textContent = String(info_entrega);
+    }
+
+    function cargarMenuEntidades() {
+      const contenedor = document.getElementById('menu_entidades_contenedor');
+
+      if (!contenedor) {
+        mostrarModal('No existe el contenedor del menú de entidades.');
+        return;
+      }
+
+      contenedor.innerHTML = '';
+
+      if (typeof menu_entidades === 'undefined') {
+        mostrarModal('No existe la variable menu_entidades.');
+        return;
+      }
+
+      if (!Array.isArray(menu_entidades)) {
+        mostrarModal('La variable menu_entidades debe ser un array.');
+        return;
+      }
+
+      menu_entidades.forEach(nombreEntidad => {
+        const boton = document.createElement('button');
+
+        boton.type = 'button';
+        boton.className = 'boton-entidad';
+        boton.textContent = nombreEntidad;
+
+        boton.onclick = function () {
+          seleccionarEntidad(nombreEntidad);
+        };
+
+        contenedor.appendChild(boton);
+      });
+    }
+
+    function seleccionarEntidad(nombreEntidad) {
+      try {
+        if (typeof Gestor === 'undefined') {
+          mostrarModal('No se ha localizado la clase Gestor.');
+          return;
+        }
+
+        const gestor = new Gestor(nombreEntidad);
+        gestor.iniciar();
+
+      } catch (error) {
+        mostrarModal('Error al iniciar la entidad ' + nombreEntidad + ': ' + error.message);
+      }
+    }
+
+    function mostrarOcultarMenu() {
+      const contenedor = document.getElementById('menu_entidades_contenedor');
+
+      if (!contenedor) {
+        mostrarModal('No existe el contenedor del menú.');
+        return;
+      }
+
+      contenedor.classList.toggle('visible');
+    }
+
+    function mostrarModal(texto) {
+      const modal = document.getElementById('modal_error');
+      const textoModal = document.getElementById('modal_error_texto');
+
+      if (!modal || !textoModal) {
+        alert(texto);
+        return;
+      }
+
+      textoModal.textContent = texto;
+      modal.classList.remove('oculto');
+    }
+
+    function cerrarModal() {
+      const modal = document.getElementById('modal_error');
+
+      if (modal) {
+        modal.classList.add('oculto');
+      }
+    }
+  </script>
+
+</body>
+</html>
